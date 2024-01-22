@@ -102,4 +102,4 @@ def run(save: bool = True) -> None:
 
 if __name__ == "__main__":
     plt.rcParams['figure.dpi'] = plot_dpi
-    run(True)
+    run(False)
