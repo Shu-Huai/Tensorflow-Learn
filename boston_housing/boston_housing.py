@@ -2,10 +2,8 @@ import numpy as np
 import tensorflow.keras as keras
 from keras.callbacks import History
 from keras.datasets import boston_housing
-import tensorflow as tf
 from keras.layers import *
 from keras.models import Sequential
-from numpy import ndarray
 from sklearn.metrics import r2_score
 
 from config import *
@@ -14,10 +12,6 @@ from utils import *
 
 def load_data() -> tuple[tuple[ndarray, ndarray], tuple[ndarray, ndarray]]:
     return boston_housing.load_data(path=os.path.join(os.path.dirname(__file__), data_path))
-
-
-def check_device():
-    print("设备：" + str(tf.config.list_physical_devices('GPU')))
 
 
 def preprocess(x_train: ndarray, x_test: ndarray) -> tuple[ndarray, ndarray]:
@@ -58,6 +52,7 @@ def fit(model: Sequential, x_train: ndarray, y_train: ndarray, x_test: ndarray, 
 def show_mae(history: History, save: bool = True) -> None:
     plot(save, os.path.join(os.path.dirname(__file__), plot_path, 'mean_absolute_error.png') if save else None,
          mean_absolute_error=history.history['mean_absolute_error'])
+    print(f"min_mae: {min(history.history['mean_absolute_error'])}")
 
 
 def predict(model: Sequential, x_test: ndarray) -> ndarray:
@@ -70,8 +65,8 @@ def score(predict_value: ndarray, test_value: ndarray) -> float:
 
 def show_accuracy(predict_value: ndarray, test_value: ndarray, save: bool = True) -> None:
     plot(save, os.path.join(os.path.dirname(__file__), plot_path, 'accuracy.png') if save else None,
-         test_value=test_value,
-         predict_value=predict_value,
+         predict_value=Param(predict_value, label="predict_value", marker="o"),
+         test_value=Param(test_value, label="test_value", marker="*", line_style="-"),
          difference=test_value - predict_value)
 
 
@@ -84,16 +79,17 @@ def load_model() -> Sequential:
 
 
 def run(save: bool = True) -> None:
+    check_device()
     (x_train, y_train), (x_test, y_test) = load_data()
-    print("训练集x：" + str(x_train.shape))
-    print("训练集y：" + str(y_train.shape))
+    print(f"训练集x：{str(x_train.shape)}")
+    print(f"训练集y：{str(y_train.shape)}")
     x_train, x_test = preprocess(x_train, x_test)
     model: Sequential = build_network(x_train.shape[1])
     history = fit(model, x_train, y_train, x_test, y_test)
     show_mae(history)
     result: ndarray = predict(model, x_test)
-    print("模型分数：" + str(score(result, y_test)))
-    show_accuracy(np.array([item[0] for item in result]), y_test)
+    print(f"模型分数：{str(score(result, y_test))}")
+    show_accuracy(np.array([item[0] for item in result[:50]]), y_test[:50])
     if save:
         save_model(model)
     model: Sequential = load_model()
@@ -102,4 +98,4 @@ def run(save: bool = True) -> None:
 
 if __name__ == "__main__":
     plt.rcParams['figure.dpi'] = plot_dpi
-    run(False)
+    run(True)

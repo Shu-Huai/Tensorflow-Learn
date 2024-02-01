@@ -1,7 +1,7 @@
 import os
 
 batch_size: int = 1
-epochs: int = 100
+epochs: int = 200
 plot_dpi: int = 600
 data_path: str = os.path.join("datasets", "boston_housing.npz")
 plot_path: str = r"plots"
